@@ -1,0 +1,34 @@
+{
+  "source": "FAQ specifications for paddy (maximum % limits)",
+  "limits": {
+    "moisture": 17,
+    "foreign_organic": 1,
+    "foreign_inorganic": 1,
+    "damaged_sprouted_pest": 4,
+    "immature_shrivelled": 3,
+    "discoloured": 1,
+    "lower_variety_mix": 6
+  },
+  "labels": {
+    "moisture": "Moisture",
+    "foreign_organic": "Foreign matter, organic",
+    "foreign_inorganic": "Foreign matter, inorganic",
+    "damaged_sprouted_pest": "Damaged, sprouted or pest-affected",
+    "immature_shrivelled": "Immature or shrivelled",
+    "discoloured": "Discoloured",
+    "lower_variety_mix": "Lower-variety mix"
+  },
+  "mills": [
+    "Kuttanad Mill 1",
+    "Kuttanad Mill 2",
+    "Kainakary Mill",
+    "Champakulam Mill",
+    "Alappuzha Town Mill"
+  ],
+  "authority": {
+    "name": "Concerned authority",
+    "email": ""
+  },
+  "grace_points": 0.5,
+  "demand_tolerance_kg": 0.5
+}

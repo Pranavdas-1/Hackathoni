@@ -1,0 +1,233 @@
+{
+ "lots": [
+  {
+   "id": "Lmwr05qa3",
+   "farmer": "Pranav Das",
+   "plot": "5",
+   "area": "Kuttanad",
+   "quintals": 33,
+   "mill": "A block",
+   "harvestAt": "2026-11-21T22:50:00.000Z",
+   "gps": "9.50649, 76.35291",
+   "delayReportedAt": null,
+   "result": null,
+   "photo": null
+  },
+  {
+   "id": "Lmwr03ty9",
+   "farmer": "Pranav Das",
+   "plot": "5",
+   "area": "Kuttanad",
+   "quintals": 55,
+   "mill": "A block",
+   "harvestAt": "2026-11-21T22:49:00.000Z",
+   "gps": "",
+   "delayReportedAt": null,
+   "result": null,
+   "photo": null
+  },
+  {
+   "id": "L1",
+   "farmer": "Thomas Kurian",
+   "plot": "C-Block 14",
+   "area": "Kuttanad",
+   "quintals": 42,
+   "mill": "Kuttanad Mill 1",
+   "harvestAt": "2026-11-21T02:37:39.989Z",
+   "gps": "9.50, 76.38",
+   "delayReportedAt": null,
+   "result": null,
+   "photo": null
+  },
+  {
+   "id": "L2",
+   "farmer": "Saramma Joseph",
+   "plot": "R-Block 9",
+   "area": "Kainakary",
+   "quintals": 30,
+   "mill": "Kainakary Mill",
+   "harvestAt": "2026-11-19T10:37:39.989Z",
+   "gps": "9.57, 76.42",
+   "delayReportedAt": null,
+   "result": null,
+   "photo": null
+  },
+  {
+   "id": "L3",
+   "farmer": "Biju Mathew",
+   "plot": "Plot 22",
+   "area": "Champakulam",
+   "quintals": 55,
+   "mill": "Champakulam Mill",
+   "harvestAt": "2026-11-18T14:37:39.989Z",
+   "gps": "9.64, 76.46",
+   "delayReportedAt": null,
+   "result": null,
+   "photo": null
+  },
+  {
+   "id": "L4",
+   "farmer": "Lekha Nair",
+   "plot": "Plot 5",
+   "area": "Kuttanad",
+   "quintals": 38,
+   "mill": "Kuttanad Mill 2",
+   "harvestAt": "2026-11-17T08:37:39.989Z",
+   "gps": "9.71, 76.50",
+   "delayReportedAt": null,
+   "result": null,
+   "photo": null
+  },
+  {
+   "id": "L5",
+   "farmer": "Rajan Pillai",
+   "plot": "A-Block 3",
+   "area": "Kainakary",
+   "quintals": 47,
+   "mill": "Kainakary Mill",
+   "harvestAt": "2026-11-16T02:37:39.989Z",
+   "gps": "9.78, 76.54",
+   "delayReportedAt": null,
+   "result": {
+    "at": "2026-11-19T00:37:39.989Z",
+    "values": {
+     "moisture": 15.8,
+     "foreign_organic": 0.6,
+     "foreign_inorganic": 0.2,
+     "damaged_sprouted_pest": 2,
+     "immature_shrivelled": 1.5,
+     "discoloured": 0.5,
+     "lower_variety_mix": 3
+    }
+   },
+   "photo": {
+    "foreign_matter": {
+     "low": 1,
+     "high": 5
+    },
+    "discoloured": {
+     "low": 1,
+     "high": 4
+    },
+    "damaged_sprouted": {
+     "low": 0,
+     "high": 2
+    },
+    "confidence": "medium",
+    "reason": "The sample appears to be very uniform and consists primarily of rice husks, making it difficult to distinguish individual grain defects.",
+    "sampleMixed": true,
+    "at": "2026-11-21T23:29:31.987Z"
+   }
+  },
+  {
+   "id": "L6",
+   "farmer": "Anitha Babu",
+   "plot": "Plot 17",
+   "area": "Champakulam",
+   "quintals": 33,
+   "mill": "Champakulam Mill",
+   "harvestAt": "2026-11-14T20:37:39.989Z",
+   "gps": "9.85, 76.58",
+   "delayReportedAt": "2026-11-18T14:37:39.989Z",
+   "result": {
+    "at": "2026-11-18T09:37:39.989Z",
+    "values": {
+     "moisture": 19.4,
+     "foreign_organic": 1.8,
+     "foreign_inorganic": 0.2,
+     "damaged_sprouted_pest": 2,
+     "immature_shrivelled": 1.5,
+     "discoloured": 0.5,
+     "lower_variety_mix": 3
+    }
+   },
+   "photo": {
+    "foreign_matter": {
+     "low": 95,
+     "high": 100
+    },
+    "discoloured": {
+     "low": 0,
+     "high": 1
+    },
+    "damaged_sprouted": {
+     "low": 0,
+     "high": 1
+    },
+    "confidence": "low",
+    "reason": "The image consists almost entirely of empty rice husks (chaff) with no visible whole grains to assess for quality.",
+    "sampleMixed": true,
+    "at": "2026-11-21T23:39:25.174Z"
+   },
+   "reportedAt": "2026-11-21T23:11:55.178Z",
+   "demand": {
+    "kgPer100": 3,
+    "at": "2026-11-21T23:37:59.003Z"
+   }
+  },
+  {
+   "id": "L7",
+   "farmer": "Sunil Varghese",
+   "plot": "C-Block 6",
+   "area": "Kuttanad",
+   "quintals": 60,
+   "mill": "Kuttanad Mill 1",
+   "harvestAt": "2026-11-17T18:37:39.989Z",
+   "gps": "9.92, 76.62",
+   "delayReportedAt": null,
+   "result": {
+    "at": "2026-11-20T18:37:39.989Z",
+    "values": {
+     "moisture": 17,
+     "foreign_organic": 0.6,
+     "foreign_inorganic": 0.2,
+     "damaged_sprouted_pest": 2,
+     "immature_shrivelled": 1.5,
+     "discoloured": 1.4,
+     "lower_variety_mix": 3
+    }
+   },
+   "photo": {
+    "foreign_matter": {
+     "low": 0,
+     "high": 2
+    },
+    "discoloured": {
+     "low": 2,
+     "high": 6
+    },
+    "damaged_sprouted": {
+     "low": 0,
+     "high": 2
+    },
+    "confidence": "high",
+    "reason": "The image is clear and shows a very uniform, clean sample of paddy grains with minimal visible impurities.",
+    "at": "2026-11-21T22:52:34.743Z"
+   }
+  },
+  {
+   "id": "L8",
+   "farmer": "Mercy George",
+   "plot": "R-Block 2",
+   "area": "Kainakary",
+   "quintals": 28,
+   "mill": "Kainakary Mill",
+   "harvestAt": "2026-11-21T14:37:39.989Z",
+   "gps": "9.99, 76.66",
+   "delayReportedAt": null,
+   "result": {
+    "at": "2026-11-21T23:31:00.000Z",
+    "values": {
+     "moisture": 10,
+     "foreign_organic": 8,
+     "foreign_inorganic": 8,
+     "damaged_sprouted_pest": 8,
+     "immature_shrivelled": 8,
+     "discoloured": 8,
+     "lower_variety_mix": 8
+    }
+   },
+   "photo": null
+  }
+ ]
+}
