@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paddy lot tracker</title>
+<style>
+:root{--bg:#f2f4ee;--ink:#1b2a25;--muted:#5a6a63;--water:#14424a;--straw:#d9a63c;--card:#fff;--line:#dbe1d5;--ok:#2d7a3b;--bad:#b3261e;--warn:#fbefd0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI","Noto Sans Malayalam","Manjari",sans-serif;-webkit-font-smoothing:antialiased}
+header{background:var(--water);color:#fff;position:sticky;top:0;z-index:5}
+.bar{max-width:720px;margin:0 auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.bar a{color:#fff;text-decoration:none;font-weight:700;font-size:1.0625rem}
+header button{min-height:36px;padding:0 14px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55)}
+main{max-width:720px;margin:0 auto;padding:24px 20px 64px}
+h1{font-size:1.5rem;line-height:1.25;margin:0;font-weight:700}
+h2{font-size:1.125rem;line-height:1.3;margin:32px 0 12px;font-weight:700}
+p{margin:0 0 12px}.note{color:var(--muted);font-size:.875rem}
+.page-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.back{display:inline-block;margin-bottom:12px;color:var(--water);font-weight:600;text-decoration:none}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px}
+.card>:last-child{margin-bottom:0}
+a.lot{display:block;color:inherit;text-decoration:none;border-left:5px solid var(--water)}
+a.lot.Overdue{border-left-color:var(--bad)}a.lot.Inspected{border-left-color:var(--ok)}
+a.lot:hover{box-shadow:0 2px 10px rgba(20,66,74,.12)}
+.lot .name{font-weight:700;font-size:1.0625rem}.lot .meta{color:var(--muted);font-size:.875rem;margin:2px 0 10px}
+.cd{font-weight:700;font-variant-numeric:tabular-nums}
+.big{font-size:1.5rem;line-height:1.3;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:8px}
+.pill{display:inline-block;padding:2px 12px;border-radius:99px;font-size:.8125rem;font-weight:700;color:#fff;background:var(--water);white-space:nowrap}
+.pill.Inspected,.pill.ok{background:var(--ok)}.pill.Overdue,.pill.over{background:var(--bad)}
+label{display:block;font-size:.875rem;font-weight:600;margin:0 0 6px}
+input,select{width:100%;min-height:44px;padding:0 12px;border:1px solid #b9c4b2;border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+input[type=file]{padding:9px 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.grid>div{margin-bottom:16px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+button,.btn{min-height:44px;padding:0 20px;border:0;border-radius:10px;background:var(--water);color:#fff;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button.alt{background:#fff;color:var(--water);border:1px solid var(--water)}button.danger{background:var(--bad)}button.on{background:var(--bad);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--straw);outline-offset:2px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.warn{background:var(--warn);border:2px solid var(--bad);border-radius:12px;padding:16px;margin:0 0 16px;font-weight:700;color:#6b1410}
+.flag{background:var(--warn);border-left:5px solid var(--bad);border-radius:6px;padding:10px 14px;margin:12px 0;font-weight:700}
+.help{background:#eef4ee;border-radius:10px;padding:12px 14px;margin:12px 0 20px;font-size:.875rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse}td,th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}tr:last-child td{border-bottom:0}
+ul.tl{list-style:none;padding:0;margin:0 0 0 6px;border-left:3px solid var(--water)}ul.tl li{padding:0 0 16px 20px}ul.tl li:last-child{padding-bottom:0}
+@media print{header,.noprint{display:none}body{background:#fff}.card{break-inside:avoid}}
+.guide{margin:0 0 16px;padding-left:20px}.guide li{margin-bottom:6px}.check{display:flex;gap:10px;align-items:flex-start;font-size:1rem;margin:12px 0}.check input{width:20px;min-height:20px;margin-top:4px}blockquote{margin:0}
+</style></head><body>
+<header><div class="bar"><a href="#/">Paddy lot tracker</a><button id="lang"></button></div></header>
+<main id="app"></main>
+<script>
+const $ = s => document.querySelector(s), H = 36e5;
+const S = { lang: localStorage.lang || 'en', name: localStorage.name || '', lots: [], cfg: null, tr: JSON.parse(localStorage.tr || '{}'), seen: new Set() };
+const t = s => { S.seen.add(s); return S.lang === 'ml' && S.tr[s] || s; };
+const api = async (u, o) => { const r = await fetch(u, o), j = await r.json(); if (!r.ok) throw new Error(j.error || r.status); return j; };
+const post = (u, b) => api(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) });
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const hm = ms => { const s = Math.floor(Math.abs(ms) / 1000); return `${Math.floor(s / 3600)}h ${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}m ${String(s % 60).padStart(2, '0')}s`; };
+const hh = x => x.toFixed(1) + ' h';
+const when = i => new Date(i).toLocaleString(S.lang === 'ml' ? 'ml-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+const localInput = d => { d = new Date(d); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const T = l => +new Date(l.harvestAt), dl = l => T(l) + 72 * H, hard = l => T(l) + 96 * H;
+const st = l => l.result ? 'Inspected' : Date.now() > dl(l) ? 'Overdue' : 'Waiting';
+const delayH = l => Math.max(0, ((l.result ? +new Date(l.result.at) : Date.now()) - dl(l)) / H);
+const sinceH = l => (+new Date(l.result.at) - T(l)) / H;
+function cd(l) {
+  const s = st(l), n = Date.now();
+  if (s === 'Inspected') return t('Inspected') + ', ' + (delayH(l) > 0 ? t('late by') + ' ' + hh(delayH(l)) : t('on time'));
+  if (s === 'Waiting') return t('Check due in') + ' ' + hm(dl(l) - n);
+  return t('Overdue by') + ' ' + hm(n - dl(l)) + ', ' + (n < hard(l) ? t('hard limit in') + ' ' + hm(hard(l) - n) : t('past the 96 h hard limit'));
+}
+const pill = l => `<span class="pill ${st(l)}" data-pill="${l.id}">${t(st(l))}</span>`;
+const lim = () => S.cfg.limits, lab = k => t(S.cfg.labels[k]);
+const over = (l, k, r = l.result) => r.values[k] > lim()[k];
+const EST = 'Rough visual estimate. It cannot measure moisture and cannot judge differences of 1 to 2 points.';
+
+function flags(l) {
+  if (!l.result || !l.photo || l.photo.confidence === 'low') return [];
+  const v = l.result.values, p = l.photo, f = [];
+  const map = [['Foreign matter', v.foreign_organic + v.foreign_inorganic, p.foreign_matter], ['Discoloured', v.discoloured, p.discoloured], ['Damaged or sprouted', v.damaged_sprouted_pest, p.damaged_sprouted]];
+  for (const [n, mill, e] of map) if (mill > e.high + 3) f.push(n);
+  return f;
+}
+const params = (l, r = l.result) => `<table>${Object.keys(lim()).map(k => `<tr><td>${lab(k)}</td><td>${r.values[k]}%</td><td class="note">${t('max')} ${lim()[k]}%</td><td><span class="pill ${over(l, k, r) ? 'over' : 'ok'}">${t(over(l, k, r) ? 'Over limit' : 'Within limit')}</span></td></tr>`).join('')}</table>`;
+const moistWarn = l => l.result && over(l, 'moisture') ? `<div class="warn">${t('Moisture over limit')}: ${l.result.values.moisture}% (${t('max')} ${lim().moisture}%).<br>${t('Hours since harvest')}: ${hh(sinceH(l))}. ${t('Past the 72 h check')}: ${hh(delayH(l))}.</div>` : '';
+const rg = e => `${e.low}–${e.high}%`;
+const photoInfo = l => { if (!l.photo) return `<p class="note">${t('No photo check yet.')}</p>`; const p = l.photo, fm = p.foreign_matter, lo = (l.quintals * fm.low / 100).toFixed(1), hi = (l.quintals * fm.high / 100).toFixed(1);
+  return `<table><tr><td>${t('Estimated chaff in sample')}</td><td>${rg(fm)}</td></tr><tr><td>${t('Discoloured')}</td><td>${rg(p.discoloured)}</td></tr><tr><td>${t('Damaged or sprouted')}</td><td>${rg(p.damaged_sprouted)}</td></tr><tr><td>${t('Confidence')}</td><td>${t(p.confidence)}</td></tr><tr><td>${t('Sample mixed from edge and centre')}</td><td>${t(p.sampleMixed ? 'Yes, declared by farmer' : 'Not declared')}</td></tr></table><p class="note" style="margin-top:12px">${t('If the sample is representative, that is about')} ${lo}–${hi} ${t('quintals out of')} ${l.quintals}.</p><p>${esc(p.reason)}</p>
+  ${flags(l).map(n => `<div class="flag">${t('Mill figure looks high for')} ${t(n)}. ${t('Ask for a re-test.')}</div>`).join('')}<p class="note">${t(EST)}</p>`; };
+const rform = (p, btn, note) => `<p class="note">${t(note)}</p><div class="grid">${Object.keys(lim()).map(k => `<div><label for="${p}-${k}">${lab(k)} (%, ${t('max')} ${lim()[k]})</label><input id="${p}-${k}" type="number" step="0.1" min="0" inputmode="decimal"></div>`).join('')}<div><label for="${p}-at">${t('Time of inspection')}</label><input id="${p}-at" type="datetime-local" value="${localInput(Date.now())}"></div></div><div class="actions"><button id="${btn}">${t('Save mill result')}</button></div><p class="note" id="${p}-msg" role="status"></p>`;
+const retestBlock = l => !l.retest ? '' : `<h2>${t('Re-test')}</h2><div class="card"><p class="note">${t('Requested at')} ${when(l.retest.requestedAt)}. ${esc(t(l.retest.reason))}</p>${l.retest.result ? `<p class="note">${t('Inspected')}: ${when(l.retest.result.at)}</p>${params(l, l.retest.result)}` : rform('t', 'tsave', 'Enter the re-test result from the mill.')}</div>`;
+function fair(l) { const v = l.result.values, g = S.cfg.grace_points ?? 0.5, rows = [], me = v.moisture - lim().moisture - g;
+  if (me > 0) rows.push({ k: 'moisture', kg: +(100 * me / (100 - lim().moisture)).toFixed(2) });
+  for (const k of Object.keys(lim())) if (k !== 'moisture') { const e = v[k] - lim()[k] - g; if (e > 0) rows.push({ k, kg: +e.toFixed(2) }); }
+  return { rows, g, total: +rows.reduce((a, x) => a + x.kg, 0).toFixed(2) }; }
+const excessive = l => l.result && l.demand && l.demand.kgPer100 > fair(l).total + (S.cfg.demand_tolerance_kg ?? 0.5);
+const fairBlock = (l, ro) => { if (!l.result) return ''; const f = fair(l), d = l.demand && l.demand.kgPer100;
+  return `<h2>${t('Fair deduction')}</h2><div class="card">${f.rows.length ? `<table>${f.rows.map(r => `<tr><td>${lab(r.k)}</td><td>${r.kg} kg ${t('per 100 kg')}</td></tr>`).join('')}<tr><td><b>${t('Fair total')}</b></td><td><b>${f.total} kg ${t('per 100 kg')}</b></td></tr></table><p class="note" style="margin-top:12px">${t('For this whole lot')}: ${(f.total * l.quintals).toFixed(1)} kg.</p>` : `<p>${t('Nothing is over the limit by more than the grace. No deduction is fair here.')}</p>`}
+  <p class="note">${t('Only the part above the limit plus a grace of')} ${f.g} ${t('points is counted, because mill tests have small errors. Tiny excesses cost little or nothing. This is a fair-share guide, not an official rule.')}</p>
+  ${d != null ? `<p><b>${t('Mill asked for')}: ${d} kg ${t('per 100 kg')}</b></p>${excessive(l) ? `<div class="flag">${t('The deduction asked is above the proportional amount. Ask the mill for an itemised calculation or a re-test.')}</div>` : `<p class="note">${t('The deduction asked is close to the proportional amount.')}</p>`}` : ''}
+  ${ro ? '' : `<div class="noprint"><label for="dem">${t('Extra kg the mill asked per 100 kg')}</label><div class="row"><input id="dem" type="number" step="0.1" min="0" inputmode="decimal" style="flex:1" value="${d ?? ''}"><button id="dsave">${t('Save')}</button></div><p class="note" id="d-msg" role="status"></p></div>`}</div>`; };
+const dispute = l => { if (!l.result) return ''; const fl = flags(l), moist = over(l, 'moisture'), ex = excessive(l), can = fl.length || ex; if (!can && !moist) return '';
+  const why = [fl.length && t('The mill figure is far above the photo estimate.'), ex && t('The deduction asked is above the proportional amount.')].filter(Boolean).join(' ');
+  return `<h2>${t('If you disagree with the result')}</h2><div class="card noprint">` +
+    (can ? `<p>${why} ${t('You can raise an appeal and ask for an independent re-test.')}</p>${l.appeal ? `<p class="note">${t('Appeal raised at')} ${when(l.appeal.at)}</p>` : ''}<div class="actions"><button class="danger" id="appeal">${t(l.appeal ? 'Send appeal again' : 'Raise an appeal')}</button></div>` : '') +
+    (moist ? `<p style="margin-top:${can ? 20 : 0}px">${t('Wet paddy can be dried and checked again. You can ask for a re-check after drying.')}</p>` + (l.retest ? '' : `<div class="actions"><button id="retest">${t('Request re-check after drying')}</button></div>`) : '') + '</div>'; };
+const card = l => `<a class="card lot ${st(l)}" href="#/lot/${l.id}"><div class="row"><span class="name">${esc(l.farmer)}</span>${pill(l)}</div><div class="meta">${esc(l.plot)}, ${t(l.area)}, ${l.quintals} ${t('quintals')}, ${esc(l.mill)}</div><div class="cd" data-cd="${l.id}">${cd(l)}</div></a>`;
+const GUIDE = ['Take a small handful from at least 8 places: the edges, the corners and the centre of the field or heap, from the top and from deeper down.', 'Mix everything together well on a clean sheet before you choose the sample.', 'Do not pick out chaff and do not choose the best grains. A fair sample is a random one.', 'Spread a thin layer on a plain, light surface in daylight and take one photo from directly above.', 'Keep the rest of the sample so it can be checked again.'];
+
+const V = {
+  list() {
+    const welcome = S.name ? '' : `<div class="card"><label for="nm">${t('Your name')}</label><input id="nm"><div class="actions"><button id="nmgo">${t('Continue')}</button></div></div>`;
+    const sec = ['Overdue', 'Waiting', 'Inspected'].map(s => [s, S.lots.filter(l => st(l) === s)]).filter(g => g[1].length).map(([s, a]) => `<h2>${t(s)} (${a.length})</h2>` + a.map(card).join('')).join('');
+    return `${welcome}<div class="page-head"><h1>${t('Lots')}</h1><a class="btn" href="#/new">${t('New harvest log')}</a></div>${sec}`;
+  },
+  new() {
+    const f = (id, label, ex = '') => `<div><label for="${id}">${t(label)}</label><input id="${id}" ${ex}></div>`;
+    return `<h1 style="margin-bottom:20px">${t('New harvest log')}</h1><div class="card"><button id="mic" class="alt">🎤 ${t('Speak in Malayalam')}</button>
+    <p class="help">${t('Say all five in one go, in this order: name, plot, quintals, mill, harvest time. Say the mill name as in the list.')}<br><b>${t('Example')}:</b></p><blockquote class="help" lang="ml" style="margin-top:-12px">എന്റെ പേര് രാജേഷ്. പ്ലോട്ട് നമ്പർ ഏഴ്. ഇരുപത്തിയഞ്ച് ക്വിന്റൽ. കുട്ടനാട് മിൽ ഒന്ന്. നാളെ രാവിലെ പത്ത് മണി.</blockquote><p class="note" id="heard"></p>
+    <div class="grid">${f('f-name', 'Name', `value="${esc(S.name)}"`)}${f('f-plot', 'Plot')}${f('f-quintals', 'Quintals', 'type="number" step="0.1" min="0" inputmode="decimal"')}<div><label for="f-mill">${t('Mill')}</label><select id="f-mill"><option value="">${t('Choose a mill')}</option>${S.cfg.mills.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></div>
+    <div><label for="f-area">${t('Area')}</label><select id="f-area">${['Kuttanad', 'Kainakary', 'Champakulam'].map(a => `<option value="${a}">${t(a)}</option>`).join('')}</select></div>
+    ${f('f-time', 'Harvest time', `type="datetime-local" value="${localInput(Date.now())}"`)}</div>
+    <label for="f-gps">GPS</label><div class="row"><input id="f-gps" style="flex:1"><button class="alt" id="gps">${t('Use my location')}</button></div>
+    <div class="actions"><button id="save">${t('Save harvest log')}</button></div><p class="note" id="msg" role="status" style="margin-top:12px"></p></div>`;
+  },
+  lot(l) {
+    const s = st(l), v = l.result;
+    return `<a class="back" href="#/">${t('Back to lots')}</a><div class="page-head" style="margin-bottom:4px"><h1>${esc(l.farmer)}, ${esc(l.plot)}</h1>${pill(l)}</div>
+    <div class="note" style="margin-bottom:16px">${t(l.area)}, ${l.quintals} ${t('quintals')}, ${esc(l.mill)}</div>
+    <div class="card"><div class="big" data-cd="${l.id}">${cd(l)}</div><p class="note">${t('Harvested')}: ${when(l.harvestAt)}. ${t('72 h check due')}: ${when(dl(l))}. ${t('Hard limit')}: ${when(hard(l))}.</p>
+    ${delayH(l) > 0 ? `<p><b>${t('Delay')}: ${hh(delayH(l))}</b></p>${l.delayReportedAt ? `<p class="note">${t('Delay reported at')} ${when(l.delayReportedAt)}</p>` : ''}${l.reportedAt ? `<p class="note">${t('Reported to authority at')} ${when(l.reportedAt)}</p>` : ''}<div class="actions noprint">${s === 'Overdue' && !l.delayReportedAt ? `<button class="danger" id="delay">${t('Report delay')}</button>` : ''}<button class="danger" id="report">${t(l.reportedAt ? 'Send report again' : 'Report mill to authority')}</button></div>` : ''}</div>
+    ${v ? `${moistWarn(l)}<h2>${t('Mill result')}</h2><div class="card"><p class="note">${t('Inspected')}: ${when(v.at)}</p>${params(l)}</div>` : `<h2>${t('Mill result')}</h2><div class="card">${rform('r', 'rsave', 'Enter what the mill reported. Saving closes the countdown.')}</div>`}
+    ${v ? fairBlock(l) : ''}${retestBlock(l)}
+    <h2>${t('Photo check')}</h2><div class="card noprint"><p><b>${t('Take a fair sample first')}</b></p><ul class="guide">${GUIDE.map(g => `<li>${t(g)}</li>`).join('')}</ul>
+    <label class="check"><input type="checkbox" id="mixed"> <span>${t('I mixed handfuls from the edge and the centre as described above.')}</span></label><input id="photo" type="file" accept="image/*" capture="environment" disabled><p class="note" id="msg" role="status" style="margin-top:12px">${t(EST)}</p></div>
+    <div class="card">${photoInfo(l)}</div>${dispute(l)}
+    <div class="actions"><a class="btn" href="#/evidence/${l.id}">${t('Evidence page')}</a></div>`;
+  },
+  evidence(l) {
+    const v = l.result, li = (k, x) => `<li><b>${t(k)}</b><br>${x}</li>`;
+    return `<div class="actions noprint" style="margin:0 0 16px"><a class="btn alt" href="#/lot/${l.id}">${t('Back to lot')}</a><button id="print">${t('Print')}</button></div><h1 style="margin-bottom:8px">${t('Evidence page')}: ${esc(l.farmer)}, ${esc(l.plot)}</h1>
+    <p class="note">${t(l.area)}, ${l.quintals} ${t('quintals')}, ${esc(l.mill)}, GPS ${esc(l.gps) || '-'}</p>
+    <div class="card"><ul class="tl">${li('Harvest time', when(l.harvestAt))}${li('72 h check due', when(dl(l)))}${li('Hard limit', when(hard(l)))}${li('Delay reported at', l.delayReportedAt ? when(l.delayReportedAt) : '-')}${li('Inspection time', v ? when(v.at) : t('Not inspected yet'))}${li('Delay', hh(delayH(l)) + (v ? `, ${t('Hours since harvest')}: ${hh(sinceH(l))}` : ''))}${li('Reported to authority at', l.reportedAt ? when(l.reportedAt) : '-')}${li('Appeal raised at', l.appeal ? when(l.appeal.at) : '-')}${li('Re-test requested at', l.retest ? when(l.retest.requestedAt) : '-')}</ul></div>
+    ${moistWarn(l)}<h2>${t('Mill result')}</h2><div class="card">${v ? params(l) : `<p class="note">${t('No mill result yet.')}</p>`}<p class="note">${t('Source of limits')}: ${esc(S.cfg.source)}</p></div>
+    ${v ? fairBlock(l, true) : ''}${l.retest && l.retest.result ? `<h2>${t('Re-test')}</h2><div class="card"><p class="note">${t('Requested at')} ${when(l.retest.requestedAt)}. ${esc(t(l.retest.reason))}</p><p class="note">${t('Inspected')}: ${when(l.retest.result.at)}</p>${params(l, l.retest.result)}</div>` : ''}
+    <h2>${t('Photo check')}</h2><div class="card">${photoInfo(l)}</div>`;
+  }
+};
+
+async function refresh() { S.lots = await api('/api/lots'); }
+async function route() {
+  const [, v, id] = location.hash.split('/'), l = S.lots.find(x => x.id === id);
+  const view = v === 'new' ? 'new' : v === 'lot' && l ? 'lot' : v === 'evidence' && l ? 'evidence' : 'list';
+  $('#app').innerHTML = V[view](l); $('#lang').textContent = S.lang === 'en' ? 'മലയാളം' : 'English'; bind(view, l);
+  if (S.lang === 'ml') { const need = [...S.seen].filter(x => !S.tr[x]);
+    if (need.length) { try { const j = await post('/api/translate', { texts: need }); need.forEach((x, i) => S.tr[x] = j.texts[i]); } catch (e) { need.forEach(x => S.tr[x] = x); }
+      localStorage.tr = JSON.stringify(S.tr); if (!document.activeElement || document.activeElement === document.body) route(); } }
+}
+const val = id => $('#' + id).value.trim(), msg = (m, bad, id = 'msg') => { const e = $('#' + id); if (e) { e.textContent = m; e.style.color = bad ? 'var(--bad)' : ''; } };
+const norm = x => String(x).toLowerCase().replace(/[^a-z0-9]/g, '');
+const matchMill = s => { const n = norm(s); return S.cfg.mills.find(m => norm(m) === n) || S.cfg.mills.find(m => n && (norm(m).includes(n) || n.includes(norm(m)))); };
+const mailTo = (subject, text) => { try { navigator.clipboard.writeText(text); } catch {} location.href = 'mailto:' + ((S.cfg.authority || {}).email || '') + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text); };
+function reportText(l) { const v = l.result; return ['Complaint: delayed paddy moisture inspection by mill', `Farmer: ${l.farmer}`, `Plot: ${l.plot}, ${l.area}`, `Quantity: ${l.quintals} quintals`, `Mill: ${l.mill}`, `Harvest time: ${when(l.harvestAt)}`, `72 h inspection deadline: ${when(dl(l))}`, `96 h hard limit: ${when(hard(l))}`, v ? `Inspected at: ${when(v.at)}` : 'Not inspected yet', `Delay: ${hh(delayH(l))}`, l.delayReportedAt ? `Delay reported at: ${when(l.delayReportedAt)}` : '', v && over(l, 'moisture') ? `Moisture reported: ${v.values.moisture}% (limit ${lim().moisture}%)` : '', `Evidence page: ${location.origin}/#/evidence/${l.id}`].filter(Boolean).join('\n'); }
+function appealText(l) { const v = l.result.values, p = l.photo, f = fair(l), fl = flags(l);
+  return ['Appeal against mill result and request for re-test', `Farmer: ${l.farmer}`, `Plot: ${l.plot}, ${l.area}`, `Quantity: ${l.quintals} quintals`, `Mill: ${l.mill}`, `Harvest time: ${when(l.harvestAt)}`, `Mill inspection: ${when(l.result.at)} (${hh(sinceH(l))} after harvest)`, '',
+    `Mill reported: foreign matter ${+(v.foreign_organic + v.foreign_inorganic).toFixed(2)}%, discoloured ${v.discoloured}%, damaged/sprouted ${v.damaged_sprouted_pest}%, moisture ${v.moisture}%`,
+    p ? `Photo estimate (rough, ${p.confidence} confidence): foreign matter ${rg(p.foreign_matter)}, discoloured ${rg(p.discoloured)}, damaged/sprouted ${rg(p.damaged_sprouted)}` : null,
+    fl.length ? `Mill figures far above the photo estimate: ${fl.join(', ')}` : null,
+    p ? `Sample: ${p.sampleMixed ? 'farmer declared it was mixed from the edge and centre of the field' : 'sampling not declared'}` : null,
+    l.demand ? `Mill asked for ${l.demand.kgPer100} kg extra per 100 kg. Proportional amount from the limits (excess above limit plus ${f.g} point grace): ${f.total} kg per 100 kg.` : null, '',
+    'Request: an itemised calculation and an independent re-test with the farmer or a representative present.', p ? 'Note: the photo estimate is rough, cannot measure moisture and cannot judge small differences. It is a reason to ask for a re-test, not proof.' : null, `Evidence page: ${location.origin}/#/evidence/${l.id}`].filter(x => x !== null).join('\n'); }
+const saveRes = (l, p, rt) => async () => { try { const values = {}; Object.keys(lim()).forEach(k => values[k] = val(p + '-' + k)); await post(`/api/lots/${l.id}/${rt}`, { at: new Date(val(p + '-at')).toISOString(), values }); await refresh(); route(); } catch (e) { msg(e.message, 1, p + '-msg'); } };
+let rec;
+function bind(view, l) {
+  if (view === 'list' && !S.name && $('#nmgo')) $('#nmgo').onclick = () => { const n = $('#nm').value.trim(); if (n) { S.name = localStorage.name = n; route(); } };
+  if (view === 'evidence') $('#print').onclick = () => print();
+  if (view === 'new') {
+    $('#gps').onclick = () => navigator.geolocation.getCurrentPosition(p => $('#f-gps').value = p.coords.latitude.toFixed(5) + ', ' + p.coords.longitude.toFixed(5), () => msg(t('Could not get location'), 1));
+    $('#save').onclick = async () => { if (!val('f-mill')) return msg(t('Choose a mill'), 1); try { S.name = localStorage.name = val('f-name'); await post('/api/lots', { farmer: val('f-name'), plot: val('f-plot'), quintals: val('f-quintals'), mill: val('f-mill'), area: val('f-area'), gps: val('f-gps'), harvestAt: new Date(val('f-time')).toISOString() }); await refresh(); location.hash = '#/'; } catch (e) { msg(e.message, 1); } };
+    $('#mic').onclick = mic;
+  }
+  if (view === 'lot') {
+    if ($('#report')) $('#report').onclick = async () => { await post(`/api/lots/${l.id}/report`); await refresh(); const nl = S.lots.find(x => x.id === l.id); route(); mailTo('Delayed paddy inspection: ' + nl.mill + ', plot ' + nl.plot, reportText(nl)); };
+    if ($('#delay')) $('#delay').onclick = async () => { await post(`/api/lots/${l.id}/delay`); await refresh(); route(); };
+    if ($('#appeal')) $('#appeal').onclick = async () => { await post(`/api/lots/${l.id}/appeal`, { reason: [flags(l).length && 'photo estimate differs from mill', excessive(l) && 'deduction above proportional amount'].filter(Boolean).join('; ') }); await refresh(); const nl = S.lots.find(x => x.id === l.id); route(); mailTo('Appeal and re-test request: ' + nl.mill + ', plot ' + nl.plot, appealText(nl)); };
+    if ($('#retest')) $('#retest').onclick = async () => { await post(`/api/lots/${l.id}/retest`, { reason: 'Moisture over limit: paddy to be dried and re-checked' }); await refresh(); route(); };
+    if ($('#dsave')) $('#dsave').onclick = async () => { try { await post(`/api/lots/${l.id}/demand`, { kgPer100: val('dem') }); await refresh(); route(); } catch (e) { msg(e.message, 1, 'd-msg'); } };
+    if ($('#rsave')) $('#rsave').onclick = saveRes(l, 'r', 'result');
+    if ($('#tsave')) $('#tsave').onclick = saveRes(l, 't', 'retestresult');
+    $('#mixed').onchange = e => { $('#photo').disabled = !e.target.checked; };
+    $('#photo').onchange = async e => { const f = e.target.files[0]; if (!f) return; msg(t('Checking photo…'));
+      try { const data = await shrink(f); await post('/api/photo', { lotId: l.id, mime: 'image/jpeg', data, sampleMixed: $('#mixed').checked }); await refresh(); route(); } catch (x) { msg(x.message, 1); } };
+  }
+}
+function shrink(file) { return new Promise((ok, no) => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1400 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = im.width * k; c.height = im.height * k; c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .85).split(',')[1]); }; im.onerror = () => no(new Error('Could not read the photo')); im.src = URL.createObjectURL(file); }); }
+async function mic() {
+  const b = $('#mic'); if (rec && rec.state === 'recording') return rec.stop();
+  try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }), ch = []; rec = new MediaRecorder(stream);
+    rec.ondataavailable = e => ch.push(e.data);
+    rec.onstop = async () => { stream.getTracks().forEach(x => x.stop()); b.classList.remove('on'); b.textContent = '🎤 ' + t('Speak in Malayalam'); msg(t('Understanding…'));
+      try { const j = await api('/api/voice', { method: 'POST', headers: { 'Content-Type': rec.mimeType, 'X-Now': new Date().toISOString() }, body: new Blob(ch, { type: rec.mimeType }) }), f = j.fields || {};
+        if (f.name) $('#f-name').value = f.name; if (f.plot) $('#f-plot').value = f.plot; if (f.quintals) $('#f-quintals').value = f.quintals; if (f.mill) { const mm = matchMill(f.mill); if (mm) $('#f-mill').value = mm; }
+        if (f.harvest_time && !isNaN(new Date(f.harvest_time))) $('#f-time').value = localInput(f.harvest_time);
+        $('#heard').textContent = t('Heard') + ': ' + j.transcript; msg(f.harvest_time && new Date(f.harvest_time) > Date.now() ? t('The harvest time is in the future. Say today or yesterday if the paddy is already harvested.') : t('Check the fields, then save.')); } catch (e) { msg(e.message, 1); } };
+    rec.start(); b.classList.add('on'); b.textContent = '⏹ ' + t('Tap to stop'); } catch { msg(t('Microphone not available'), 1); }
+}
+$('#lang').onclick = () => { S.lang = localStorage.lang = S.lang === 'en' ? 'ml' : 'en'; route(); };
+setInterval(() => { let moved = false;
+  document.querySelectorAll('[data-cd]').forEach(e => { const l = S.lots.find(x => x.id === e.dataset.cd); if (l) e.textContent = cd(l); });
+  document.querySelectorAll('[data-pill]').forEach(e => { const l = S.lots.find(x => x.id === e.dataset.pill); if (l) { if (e.className !== 'pill ' + st(l)) moved = true; e.className = 'pill ' + st(l); e.textContent = t(st(l)); } });
+  if (moved && /^(#\/?)?$/.test(location.hash)) route();
+}, 1000);
+addEventListener('hashchange', route);
+(async () => { try { [S.cfg] = await Promise.all([api('/api/config'), refresh()]); route(); } catch (e) { $('#app').textContent = e.message; } })();
+</script></body></html>
