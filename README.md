@@ -5,23 +5,25 @@
 ---
 
 ## 1. The story behind it
-
-*This is an illustrative composite based on how paddy handling in Kuttanad is commonly described by farmers. It is not a record of one named person.*
-
-It is harvest season. A farmer in Kainakary cuts her crop in the early morning and trucks the paddy to a mill. The moisture check is supposed to happen within a set time, but the paddy sits. Nobody writes down when it arrived. When the mill finally tests it, the result is bad: moisture over the limit, "too much chaff". The mill says: *add 2 kg to every 100 kg, or we reject the lot.*
-
+ 
+*This is an illustrative composite based on how paddy handling in Kuttanad is described by farmers. It is not a record of one named person.*
+ 
+It is harvest season in Kainakary. A combine harvester cuts the field in one pass and the paddy comes off as a mass. The farmer stores it, in a heap or in sacks, and waits for the mill's quality team. The rule is that their people come, collect a sample and test its moisture and quality within a set time.
+ 
+They do not come properly. The first day passes, then the second. The paddy is still sitting there, and every hour of waiting is the farmer's risk, because nobody has recorded when the harvest was done or when the team was due.
+ 
+When the sample is finally taken and tested, the result is bad: moisture over the limit, "too much chaff". The mill says: *add 2 kg to every 100 kg, or we reject the lot.*
+ 
 She has no way to answer.
-
-- She has **no record** of when she harvested or when the check was due.
-- She cannot show that the paddy **waited at the mill** while the moisture changed.
-- She has **no independent estimate** of the chaff in her own sample.
+ 
+- She has **no record** of when the harvest was done or when the quality team was due.
+- She cannot show that the **mill's own team was late** and that the paddy kept waiting while the moisture changed.
+- She has **no independent estimate** of the chaff in her own paddy.
 - She does not know if "2 kg per 100 kg" is fair for a **0.4-point excess** or a 3-point one.
 - She has **never had a way to appeal**. Forced to accept, she accepted.
-
 This app gives her that file, in her own language, from her own phone.
-
+ 
 ---
-
 ## 2. What the app does
 
 | # | Feature | What the farmer gets |
